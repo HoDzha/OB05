@@ -5,7 +5,7 @@ import random
 pygame.init()
 
 # Параметры экрана
-width, height = 500, 500
+width, height = 600, 800
 screen = pygame.display.set_mode((width, height))
 pygame.display.set_caption("Змейка")
 
@@ -111,4 +111,5 @@ while running:
     clock.tick(10)  # Ограничение скорости до 10 FPS (можете изменить значение для ускорения или замедления)
 
 # Завершение Pygame
+# тест
 pygame.quit()
