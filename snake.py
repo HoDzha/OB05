@@ -1,4 +1,5 @@
 import pygame
+import random
 
 # Инициализация Pygame
 pygame.init()
@@ -16,6 +17,7 @@ green = (0, 255, 0)
 
 # Размер блока
 block_size = 10
+clock = pygame.time.Clock()  # Для управления скоростью игры
 
 # Класс для блоков
 class Block:
@@ -29,22 +31,24 @@ class Block:
 # Класс для змейки
 class Snake:
     def __init__(self):
-        self.body = []
+        self.body = [Block(width // 2, height // 2)]  # Начальная позиция змейки
         self.x_change = 0
         self.y_change = 0
-        self.add_block()
 
     def add_block(self):
-        self.body.append(Block(self.body[-1].x + block_size, self.body[-1].y))
+        last_block = self.body[-1]
+        self.body.append(Block(last_block.x, last_block.y))
 
     def draw(self):
         for block in self.body:
             block.draw()
 
     def move(self):
+        # Перемещаем тело змейки
         for i in range(len(self.body) - 1, 0, -1):
-            self.body[i].x = self.body[i-1].x
-            self.body[i].y = self.body[i-1].y
+            self.body[i].x = self.body[i - 1].x
+            self.body[i].y = self.body[i - 1].y
+        # Перемещаем голову
         self.body[0].x += self.x_change
         self.body[0].y += self.y_change
 
@@ -58,10 +62,13 @@ def check_collisions():
             return True
     return False
 
+def spawn_food():
+    return Block(random.randint(0, (width - block_size) // block_size) * block_size,
+                 random.randint(0, (height - block_size) // block_size) * block_size)
 
 # Создаем объекты
 snake = Snake()
-food = Block(200, 200)
+food = spawn_food()
 
 # Основной цикл игры
 running = True
@@ -70,28 +77,38 @@ while running:
         if event.type == pygame.QUIT:
             running = False
         if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_LEFT:
+            if event.key == pygame.K_LEFT and snake.x_change == 0:
                 snake.x_change = -block_size
                 snake.y_change = 0
-            elif event.key == pygame.K_RIGHT:
+            elif event.key == pygame.K_RIGHT and snake.x_change == 0:
                 snake.x_change = block_size
                 snake.y_change = 0
-            elif event.key == pygame.K_UP:
+            elif event.key == pygame.K_UP and snake.y_change == 0:
                 snake.y_change = -block_size
                 snake.x_change = 0
-            elif event.key == pygame.K_DOWN:
+            elif event.key == pygame.K_DOWN and snake.y_change == 0:
                 snake.y_change = block_size
                 snake.x_change = 0
 
     # Движение змейки
     snake.move()
 
+    # Проверка столкновений
+    if check_collisions():
+        running = False
+
+    # Проверка на съедание еды
+    if snake.body[0].x == food.x and snake.body[0].y == food.y:
+        snake.add_block()
+        food = spawn_food()
+
     # Отрисовка
     screen.fill(black)
     snake.draw()
     food.draw()
-
-    # Проверка столкновений
-    # ... (добавьте проверку столкновений со стенками и самой змеей)
-    check_collisions()
     pygame.display.update()
+
+    clock.tick(10)  # Ограничение скорости до 10 FPS (можете изменить значение для ускорения или замедления)
+
+# Завершение Pygame
+pygame.quit()
